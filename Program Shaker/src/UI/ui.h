@@ -1,6 +1,7 @@
 #ifndef SHAKER_UI_H
 #define SHAKER_UI_H
 #include <rotary/rotary.h>
+#include <display/display.h>
 
 enum class UIState
 {
@@ -26,6 +27,7 @@ private:
   float temperature = 0;
 
   RotaryEncoder &rotaryEncoder;
+  ShakerDisplay &lcdDisplay;
   void setState(UIState state);
   int nthButtonPress = 0;
   UIState state = UIState::CONFIGURING;
@@ -44,7 +46,7 @@ private:
   void handleConfigureTemperature(RotaryState rotaryState, RotaryButtonState buttonState);
 
 public:
-  ShakerUI(RotaryEncoder &rotaryEncoder) : rotaryEncoder(rotaryEncoder) {}
+  ShakerUI(RotaryEncoder &rotaryEncoder, ShakerDisplay &lcdDisplay);
   void run();
   UIState getState();
 };

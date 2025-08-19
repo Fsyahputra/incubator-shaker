@@ -2,47 +2,58 @@
 #ifndef STEPPER_H
 #define STEPPER_H
 
-#include <AccelStepper.h>
 #include <constant/hardware.h>
+
+enum class StepperState
+{
+  RUN,
+  STOP,
+};
+
+enum class InternalStepperState
+{
+  RUNNING_AT_SPEED,
+  ACCELERATING,
+  DECELERATING,
+  STOPPED,
+  RESETTING,
+};
 
 class ShakerStepper
 {
 private:
-  enum StepperState
-  {
-    RUNNING,
-    STOPPED,
-    RESETTING,
-    CONFIGURING,
-  };
-  AccelStepper Xstepper;
-  AccelStepper Ystepper;
-  AccelStepper Zstepper;
-  AccelStepper Astepper;
-
-  StepperState state = STOPPED;
-  static long STEP_PER_REV;
+  StepperState state = StepperState::STOP;
+  InternalStepperState internalState = InternalStepperState::STOPPED;
+  long STEP_PER_REV = Hardware::Stepper::STEP_PER_REV;
+  const unsigned long baseIntervalStep = 625;
+  unsigned long currentInterval = this->baseIntervalStep;
   float speed = 0;
   float acceleration = 0;
-  float convertRpmToStep(float param);
-  void resetSpeed();
-  void resetAcceleration();
-  void resetPosition();
-  void deaccelerate();
-  void initSteppers();
-  void updateSteppers();
+  int stepPins[4];
+  int dirPins[4];
+  unsigned long lastStepTime = 0;
+  InternalStepperState getInternalState();
+  void initializePins();
+  void setInternalState(InternalStepperState newState);
+  float convertRpmToStepPerMicros(float rpm);
+  int convertStepToInterval();
+  void handleAcceleration();
+  void handleDeceleration();
+  void handleRunningAtSpeed();
+  float convertRpmToStepPerMicros2(float accRpm);
+
+  void sendHighPulse();
+  void sendLowPulse();
 
 public:
-  ShakerStepper();
+  ShakerStepper(int stepPins[], int dirPins[]);
   void setSpeed(float rpm);
   void setAcceleration(float rpm);
   void run();
-  void stop();
-  void reset();
+  void setState(StepperState newState);
+  StepperState getState();
   float getSpeed();
   float getAcceleration();
-  StepperState getState();
-  void setState(StepperState state);
 };
 
 #endif

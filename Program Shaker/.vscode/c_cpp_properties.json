@@ -10,6 +10,7 @@
             "includePath": [
                 "/home/muhammad-fadhil-syahputra/incubatorShaker/Program Shaker/include",
                 "/home/muhammad-fadhil-syahputra/incubatorShaker/Program Shaker/src",
+                "/home/muhammad-fadhil-syahputra/incubatorShaker/Program Shaker/.pio/libdeps/esp32dev/LiquidCrystal_I2C",
                 "/home/muhammad-fadhil-syahputra/incubatorShaker/Program Shaker/.pio/libdeps/esp32dev/AccelStepper/src",
                 "/home/muhammad-fadhil-syahputra/incubatorShaker/Program Shaker/.pio/libdeps/esp32dev/DFRobot_OxygenSensor/src",
                 "/home/muhammad-fadhil-syahputra/incubatorShaker/Program Shaker/.pio/libdeps/esp32dev/ModbusMaster/src",
@@ -251,6 +252,7 @@
                 "path": [
                     "/home/muhammad-fadhil-syahputra/incubatorShaker/Program Shaker/include",
                     "/home/muhammad-fadhil-syahputra/incubatorShaker/Program Shaker/src",
+                    "/home/muhammad-fadhil-syahputra/incubatorShaker/Program Shaker/.pio/libdeps/esp32dev/LiquidCrystal_I2C",
                     "/home/muhammad-fadhil-syahputra/incubatorShaker/Program Shaker/.pio/libdeps/esp32dev/AccelStepper/src",
                     "/home/muhammad-fadhil-syahputra/incubatorShaker/Program Shaker/.pio/libdeps/esp32dev/DFRobot_OxygenSensor/src",
                     "/home/muhammad-fadhil-syahputra/incubatorShaker/Program Shaker/.pio/libdeps/esp32dev/ModbusMaster/src",
@@ -505,7 +507,7 @@
                 "ARDUINO=10812",
                 "ARDUINO_VARIANT=\"esp32\"",
                 "ARDUINO_BOARD=\"Espressif ESP32 Dev Module\"",
-                "ARDUINO_PARTITION_partitions",
+                "ARDUINO_PARTITION_default",
                 ""
             ],
             "cStandard": "gnu99",

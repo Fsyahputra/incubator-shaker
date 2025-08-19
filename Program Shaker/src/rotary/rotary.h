@@ -31,10 +31,10 @@ private:
   bool lastButtonState = false;
 
   unsigned long rotationLastDebounceTime = 0;
-  const unsigned long rotationDebounceDelay = 50; // milliseconds
+  const unsigned long rotationDebounceDelay = 50;
 
   unsigned long buttonLastDebounceTime = 0;
-  const unsigned long buttonDebounceDelay = 50; // milliseconds
+  const unsigned long buttonDebounceDelay = 50;
   RotaryState state = RotaryState::IDLE;
   RotaryButtonState buttonState = RotaryButtonState::RELEASED;
   void initializePins();
@@ -45,8 +45,7 @@ private:
   bool getCurrentState(int pin);
 
 public:
-  RotaryEncoder(int pinA, int pinB, int buttonPin)
-      : pinA(pinA), pinB(pinB), buttonPin(buttonPin) {};
+  RotaryEncoder(int pinA, int pinB, int buttonPin);
   RotaryState getState();
   RotaryButtonState getButtonState();
   void run();

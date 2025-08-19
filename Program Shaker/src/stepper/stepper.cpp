@@ -1,57 +1,55 @@
 #include <stepper/stepper.h>
 #include <Arduino.h>
-#include <AccelStepper.h>
-#include <constant/hardware.h>
 
-long ShakerStepper::STEP_PER_REV = Hardware::Stepper::STEP_PER_REV;
-
-void ShakerStepper::initSteppers()
+void ShakerStepper::initializePins()
 {
-  Astepper = AccelStepper(AccelStepper::DRIVER, Hardware::Stepper::Step::A, Hardware::Stepper::Dir::A);
-  Xstepper = AccelStepper(AccelStepper::DRIVER, Hardware::Stepper::Step::X, Hardware::Stepper::Dir::X);
-  Ystepper = AccelStepper(AccelStepper::DRIVER, Hardware::Stepper::Step::Y, Hardware::Stepper::Dir::Y);
-  Zstepper = AccelStepper(AccelStepper::DRIVER, Hardware::Stepper::Step::Z, Hardware::Stepper::Dir::Z);
-
-  this->resetSpeed();
-  this->resetAcceleration();
-  this->resetPosition();!
+  for (int i = 0; i < sizeof(stepPins) / sizeof(stepPins[0]); i++)
+  {
+    pinMode(stepPins[i], OUTPUT);
+    pinMode(dirPins[i], OUTPUT);
+    this->stepPins[i] = stepPins[i];
+    this->dirPins[i] = dirPins[i];
+    digitalWrite(dirPins[i], LOW);
+    digitalWrite(stepPins[i], LOW);
+  }
 }
 
-ShakerStepper::ShakerStepper()
+ShakerStepper::ShakerStepper(int stepPins[], int dirPins[])
 {
-  initSteppers();
-  setSpeed(0);
-  setAcceleration(0);
+  this->initializePins();
+  this->state = StepperState::STOP;
+  this->internalState = InternalStepperState::STOPPED;
 }
 
-void ShakerStepper::resetSpeed()
+void ShakerStepper::sendHighPulse()
 {
-  Astepper.setSpeed(0);
-  Xstepper.setSpeed(0);
-  Ystepper.setSpeed(0);
-  Zstepper.setSpeed(0);
+  for (int i = 0; i < sizeof(stepPins) / sizeof(stepPins[0]); i++)
+  {
+    digitalWrite(stepPins[i], HIGH);
+  }
 }
 
-void ShakerStepper::resetAcceleration()
+void ShakerStepper::sendLowPulse()
 {
-  Astepper.setAcceleration(0);
-  Xstepper.setAcceleration(0);
-  Ystepper.setAcceleration(0);
-  Zstepper.setAcceleration(0);
+  for (int i = 0; i < sizeof(stepPins) / sizeof(stepPins[0]); i++)
+  {
+    digitalWrite(stepPins[i], LOW);
+  }
 }
 
-void ShakerStepper::resetPosition()
+float ShakerStepper::convertRpmToStepPerMicros(float rpm)
 {
-  Astepper.setCurrentPosition(0);
-  Xstepper.setCurrentPosition(0);
-  Ystepper.setCurrentPosition(0);
-  Zstepper.setCurrentPosition(0);
+  return (rpm * STEP_PER_REV) / (60.0f * 1000000.0f);
 }
 
-float ShakerStepper::convertRpmToStep(float param)
+InternalStepperState ShakerStepper::getInternalState()
 {
-  float stepPerSec = (param * STEP_PER_REV) / 60.0;
-  return stepPerSec;
+  return this->internalState;
+}
+
+void ShakerStepper::setInternalState(InternalStepperState newState)
+{
+  this->internalState = newState;
 }
 
 void ShakerStepper::setSpeed(float rpm)
@@ -64,40 +62,116 @@ void ShakerStepper::setAcceleration(float rpm)
   this->acceleration = rpm;
 }
 
-void ShakerStepper::setState(ShakerStepper::StepperState state)
+float ShakerStepper::convertRpmToStepPerMicros2(float accRpm)
 {
-  this->state = state;
+  float stepsPerSec2 = (accRpm * STEP_PER_REV) / 60.0f;
+  return stepsPerSec2 / 1e12f;
 }
 
-ShakerStepper::StepperState ShakerStepper::getState()
+void ShakerStepper::handleAcceleration()
 {
-  return state;
+  unsigned long currentTime = micros();
+
+  float stepInterval = 1.0f / this->convertRpmToStepPerMicros(this->speed); // µs per step target
+  float a = this->convertRpmToStepPerMicros2(this->acceleration);
+  if ((float)(currentTime - this->lastStepTime) >= this->currentInterval)
+  {
+    this->lastStepTime = currentTime;
+
+    this->sendHighPulse();
+    delayMicroseconds(2);
+    this->sendLowPulse();
+
+    if (this->currentInterval > stepInterval)
+    {
+      this->currentInterval = this->currentInterval / (1.0f + a * this->currentInterval * this->currentInterval);
+      if (this->currentInterval < stepInterval)
+        this->currentInterval = stepInterval;
+      this->setInternalState(InternalStepperState::ACCELERATING);
+    }
+    else
+    {
+      this->setInternalState(InternalStepperState::RUNNING_AT_SPEED);
+    }
+  }
 }
 
-void ShakerStepper::stop()
+void ShakerStepper::handleRunningAtSpeed()
 {
-  this->state = STOPPED;
-  Astepper.stop();
-  Xstepper.stop();
-  Ystepper.stop();
-  Zstepper.stop();
-  Astepper.setSpeed(0);
-  Xstepper.setSpeed(0);
-  Ystepper.setSpeed(0);
-  Zstepper.setSpeed(0);
+  unsigned long currentTime = micros();
+  if ((float)(currentTime - this->lastStepTime) >= this->currentInterval)
+  {
+    this->lastStepTime = currentTime;
+    this->sendHighPulse();
+    delayMicroseconds(2);
+    this->sendLowPulse();
+  }
+}
+
+void ShakerStepper::handleDeceleration()
+{
+  unsigned long currentTime = micros();
+  float decelerationStep = this->convertRpmToStepPerMicros2(this->acceleration);
+  unsigned long maxInterval = this->baseIntervalStep * 10; // Interval besar untuk stop
+
+  if ((float)(currentTime - lastStepTime) >= currentInterval)
+  {
+    lastStepTime = currentTime;
+
+    this->sendHighPulse();
+    delayMicroseconds(2);
+    this->sendLowPulse();
+
+    this->currentInterval += decelerationStep;
+    this->setInternalState(InternalStepperState::DECELERATING);
+    if (currentInterval >= maxInterval)
+    {
+      currentInterval = this->baseIntervalStep;
+      setInternalState(InternalStepperState::STOPPED);
+    }
+  }
+}
+
+StepperState ShakerStepper::getState()
+{
+  return this->state;
 }
 
 void ShakerStepper::run()
 {
-  if (this->state == CONFIGURING)
+  StepperState currentState = this->getState();
+  InternalStepperState currentInternalState = this->getInternalState();
+  switch (currentState)
   {
-    this->deaccelerate();
-    return;
-  }
 
-  if (this->state == STOPPED)
-  {
-    this->stop();
-    return;
+  case StepperState::RUN:
+    switch (currentInternalState)
+    {
+    case InternalStepperState::STOPPED:
+      this->handleAcceleration();
+      break;
+    case InternalStepperState::RUNNING_AT_SPEED:
+      this->handleRunningAtSpeed();
+      break;
+    }
+    break;
+
+  case StepperState::STOP:
+    switch (currentInternalState)
+    {
+    case InternalStepperState::ACCELERATING:
+      this->handleDeceleration();
+      break;
+    case InternalStepperState::DECELERATING:
+      this->handleDeceleration();
+      break;
+    case InternalStepperState::STOPPED:
+      this->sendLowPulse(); // Ensure all pins are low when stopped
+      break;
+    case InternalStepperState::RUNNING_AT_SPEED:
+      this->handleDeceleration();
+      break;
+    }
+    break;
   }
 }

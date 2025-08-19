@@ -26,6 +26,9 @@ namespace Hardware
   {
     const int SDA = 21;
     const int SCL = 22;
+    const int LCD_ADDR = 0x27;
+    const int LCD_COLS = 16;
+    const int LCD_ROWS = 2;
   }
 
   namespace RotaryEncoder

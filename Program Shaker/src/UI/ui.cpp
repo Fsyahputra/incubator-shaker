@@ -10,6 +10,15 @@ internalUiState ShakerUI::getInternalState()
   return this->internalState;
 }
 
+ShakerUI::ShakerUI(RotaryEncoder &rotaryEncoder, ShakerDisplay &lcdDisplay)
+    : rotaryEncoder(rotaryEncoder), lcdDisplay(lcdDisplay)
+{
+  this->setInternalState(internalUiState::NOT_CONFIGURED);
+  this->setState(UIState::CONFIGURING);
+  this->lcdDisplay.setConfigTitle("Configuring");
+  this->lcdDisplay.setConfigValue("...", 0.0);
+}
+
 void ShakerUI::next()
 {
   internalUiState currentState = this->getInternalState();
@@ -76,8 +85,11 @@ void ShakerUI::handleConfigureRPM(RotaryState rotaryState, RotaryButtonState but
 {
   this->setMinMaxParam(this->rpm, 0, 300);
   this->configureParam(this->rpm, rotaryState, 10);
+  this->lcdDisplay.setConfigTitle("Configuring RPM");
+  this->lcdDisplay.setConfigValue("RPM", this->rpm);
   if (buttonState == RotaryButtonState::PRESSED)
   {
+    this->lcdDisplay.setState(displayState::CONFIGURING);
     this->next();
   }
 }
@@ -86,8 +98,11 @@ void ShakerUI::handleConfigureTime(RotaryState rotaryState, RotaryButtonState bu
 {
   this->setMinMaxParam(this->time, 0, 3600);
   this->configureParam(this->time, rotaryState, 1);
+  this->lcdDisplay.setConfigTitle("Configuring Time");
+  this->lcdDisplay.setConfigValue("Time", this->time);
   if (buttonState == RotaryButtonState::PRESSED)
   {
+    this->lcdDisplay.setState(displayState::CONFIGURING);
     this->next();
   }
 }
@@ -96,8 +111,11 @@ void ShakerUI::handleConfigureTemperature(RotaryState rotaryState, RotaryButtonS
 {
   this->setMinMaxParam(this->temperature, 0, 60);
   this->configureParam(this->temperature, rotaryState, 1);
+  this->lcdDisplay.setConfigTitle("Configuring Temperature");
+  this->lcdDisplay.setConfigValue("Temperature", this->temperature);
   if (buttonState == RotaryButtonState::PRESSED)
   {
+    this->lcdDisplay.setState(displayState::READY);
     this->next();
   }
 }
@@ -108,6 +126,7 @@ void ShakerUI::reset()
   this->time = 0;
   this->temperature = 0;
   this->nthButtonPress = 0;
+  this->lcdDisplay.setState(displayState::CONFIGURING);
 }
 
 void ShakerUI::handleMultipleButtonPress(int pressCount, internalUiState nextState)
@@ -124,6 +143,7 @@ void ShakerUI::handleMultipleButtonPress(int pressCount, internalUiState nextSta
 void ShakerUI::run()
 {
   this->rotaryEncoder.run();
+  this->lcdDisplay.run();
   RotaryState rotaryState = this->rotaryEncoder.getState();
   RotaryButtonState buttonState = this->rotaryEncoder.getButtonState();
 
@@ -132,6 +152,9 @@ void ShakerUI::run()
   if (internalState == internalUiState::NOT_CONFIGURED)
   {
     this->setState(UIState::CONFIGURING);
+    this->lcdDisplay.setState(displayState::CONFIGURING);
+    this->lcdDisplay.setConfigTitle("NOT CONFIGURED");
+    this->lcdDisplay.setConfigValue("...", 0.0);
     if (buttonState == RotaryButtonState::PRESSED)
     {
       this->handleMultipleButtonPress(3, internalUiState::CONFIGURE_RPM);
