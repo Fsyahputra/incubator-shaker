@@ -37,7 +37,6 @@ private:
   const unsigned long buttonDebounceDelay = 50;
   RotaryState state = RotaryState::IDLE;
   RotaryButtonState buttonState = RotaryButtonState::RELEASED;
-  void initializePins();
   void setState(RotaryState state);
   void setButtonState(RotaryButtonState buttonState);
   void readRotation();
@@ -46,6 +45,7 @@ private:
 
 public:
   RotaryEncoder(int pinA, int pinB, int buttonPin);
+  void initializePins();
   RotaryState getState();
   RotaryButtonState getButtonState();
   void run();

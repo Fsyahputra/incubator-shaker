@@ -32,11 +32,9 @@ private:
   int stepPins[4];
   int dirPins[4];
   unsigned long lastStepTime = 0;
-  InternalStepperState getInternalState();
-  void initializePins();
   void setInternalState(InternalStepperState newState);
   float convertRpmToStepPerMicros(float rpm);
-  int convertStepToInterval();
+  float convertStepPerMicrosToRpm(float stepPerMicros);
   void handleAcceleration();
   void handleDeceleration();
   void handleRunningAtSpeed();
@@ -47,13 +45,14 @@ private:
 
 public:
   ShakerStepper(int stepPins[], int dirPins[]);
+  void init();
   void setSpeed(float rpm);
   void setAcceleration(float rpm);
   void run();
   void setState(StepperState newState);
+  InternalStepperState getInternalState();
   StepperState getState();
   float getSpeed();
-  float getAcceleration();
 };
 
 #endif

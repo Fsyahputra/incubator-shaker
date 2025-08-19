@@ -10,13 +10,19 @@ internalUiState ShakerUI::getInternalState()
   return this->internalState;
 }
 
+void ShakerUI::init()
+{
+  this->rotaryEncoder.initializePins();
+  this->lcdDisplay.initDisplay();
+  this->setState(UIState::CONFIGURING);
+  this->setInternalState(internalUiState::NOT_CONFIGURED);
+  this->lcdDisplay.setConfigTitle("Configuring");
+  this->lcdDisplay.setConfigValue("...", 0.0);
+}
+
 ShakerUI::ShakerUI(RotaryEncoder &rotaryEncoder, ShakerDisplay &lcdDisplay)
     : rotaryEncoder(rotaryEncoder), lcdDisplay(lcdDisplay)
 {
-  this->setInternalState(internalUiState::NOT_CONFIGURED);
-  this->setState(UIState::CONFIGURING);
-  this->lcdDisplay.setConfigTitle("Configuring");
-  this->lcdDisplay.setConfigValue("...", 0.0);
 }
 
 void ShakerUI::next()
@@ -138,6 +144,36 @@ void ShakerUI::handleMultipleButtonPress(int pressCount, internalUiState nextSta
   }
 
   this->setButtonPress();
+}
+
+float ShakerUI::getRpm()
+{
+  UIState currentState = this->getState();
+  if (currentState != UIState::READY)
+  {
+    return -1.0f;
+  }
+  return this->rpm;
+}
+
+float ShakerUI::getTime()
+{
+  UIState currentState = this->getState();
+  if (currentState != UIState::READY)
+  {
+    return -1.0f;
+  }
+  return this->time;
+}
+
+float ShakerUI::getTemperature()
+{
+  UIState currentState = this->getState();
+  if (currentState != UIState::READY)
+  {
+    return -1.0f;
+  }
+  return this->temperature;
 }
 
 void ShakerUI::run()

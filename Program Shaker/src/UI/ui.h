@@ -48,6 +48,10 @@ private:
 public:
   ShakerUI(RotaryEncoder &rotaryEncoder, ShakerDisplay &lcdDisplay);
   void run();
+  void init();
+  float getRpm();
+  float getTime();
+  float getTemperature();
   UIState getState();
 };
 

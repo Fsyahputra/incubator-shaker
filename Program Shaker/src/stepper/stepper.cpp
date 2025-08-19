@@ -1,24 +1,26 @@
 #include <stepper/stepper.h>
 #include <Arduino.h>
 
-void ShakerStepper::initializePins()
+void ShakerStepper::init()
 {
   for (int i = 0; i < sizeof(stepPins) / sizeof(stepPins[0]); i++)
   {
     pinMode(stepPins[i], OUTPUT);
     pinMode(dirPins[i], OUTPUT);
-    this->stepPins[i] = stepPins[i];
-    this->dirPins[i] = dirPins[i];
     digitalWrite(dirPins[i], LOW);
     digitalWrite(stepPins[i], LOW);
   }
+  this->state = StepperState::STOP;
+  this->internalState = InternalStepperState::STOPPED;
 }
 
 ShakerStepper::ShakerStepper(int stepPins[], int dirPins[])
 {
-  this->initializePins();
-  this->state = StepperState::STOP;
-  this->internalState = InternalStepperState::STOPPED;
+  for (int i = 0; i < 4; i++)
+  {
+    this->stepPins[i] = stepPins[i];
+    this->dirPins[i] = dirPins[i];
+  }
 }
 
 void ShakerStepper::sendHighPulse()
@@ -108,6 +110,16 @@ void ShakerStepper::handleRunningAtSpeed()
   }
 }
 
+float ShakerStepper::convertStepPerMicrosToRpm(float stepPerMicros)
+{
+  return (stepPerMicros * 60.0f * 1000000.0f) / STEP_PER_REV;
+}
+
+float ShakerStepper::getSpeed()
+{
+  return this->convertStepPerMicrosToRpm(this->currentInterval);
+}
+
 void ShakerStepper::handleDeceleration()
 {
   unsigned long currentTime = micros();
@@ -130,6 +142,11 @@ void ShakerStepper::handleDeceleration()
       setInternalState(InternalStepperState::STOPPED);
     }
   }
+}
+
+void ShakerStepper::setState(StepperState newState)
+{
+  this->state = newState;
 }
 
 StepperState ShakerStepper::getState()
@@ -166,7 +183,7 @@ void ShakerStepper::run()
       this->handleDeceleration();
       break;
     case InternalStepperState::STOPPED:
-      this->sendLowPulse(); // Ensure all pins are low when stopped
+      this->sendLowPulse();
       break;
     case InternalStepperState::RUNNING_AT_SPEED:
       this->handleDeceleration();

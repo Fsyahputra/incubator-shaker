@@ -1,9 +1,12 @@
 #include <LiquidCrystal_I2C.h>
 #include <display/display.h>
 #include <constant/hardware.h>
+#include <Wire.h>
 
 void ShakerDisplay::initDisplay()
 {
+
+  Wire.begin(sdaPin, sclPin);
   this->lcd.begin(Hardware::LcdI2C::LCD_COLS, Hardware::LcdI2C::LCD_ROWS);
   this->lcd.backlight();
   this->resetDisplay();
@@ -19,9 +22,11 @@ void ShakerDisplay::setState(displayState newState)
   this->state = newState;
 }
 
-ShakerDisplay::ShakerDisplay(LiquidCrystal_I2C &lcd) : lcd(lcd)
+ShakerDisplay::ShakerDisplay(LiquidCrystal_I2C &lcd, int sdaPin, int sclPin) : lcd(lcd), sdaPin(sdaPin), sclPin(sclPin)
 {
-  initDisplay();
+  this->lcd = lcd;
+  this->sdaPin = sdaPin;
+  this->sclPin = sclPin;
 }
 
 void ShakerDisplay::setRpm(float rpm)

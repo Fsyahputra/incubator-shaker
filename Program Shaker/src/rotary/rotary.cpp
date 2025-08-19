@@ -4,7 +4,9 @@
 RotaryEncoder::RotaryEncoder(int pinA, int pinB, int buttonPin)
     : pinA(pinA), pinB(pinB), buttonPin(buttonPin)
 {
-  initializePins();
+  this->pinA = pinA;
+  this->pinB = pinB;
+  this->buttonPin = buttonPin;
 }
 
 void RotaryEncoder::initializePins()
