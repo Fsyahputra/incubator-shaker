@@ -15,8 +15,21 @@ private:
   LiquidCrystal_I2C &lcd;
   displayState state = displayState::CONFIGURING;
   char configTitle[20] = "Configuring";
+  char lastConfigTitle[20] = "";
   char configValueLabel[20] = "";
+  char lastConfigValueLabel[20] = "";
+
+  char rpmChar[20];
+  char lastRpmChar[20];
+
+  char timeChar[20];
+  char lastTimeChar[20];
+
+  char tempChar[20];
+  char lastTempChar[20];
+
   float configValue = 0.0;
+  float lastConfigValue = 0.0;
 
   int sdaPin;
   int sclPin;
@@ -25,12 +38,22 @@ private:
   float time = 0.0;
   float temperature = 0.0;
 
+  float lastRpm = 0.0;
+  float lastTime = 0.0;
+  float lastTemperature = 0.0;
+
+
+  void resetToNCloumns(int firstColumn, int lastColumn, int row) const;
   void showConfigTitle();
   void showConfigValue();
   void showRpm();
   void showTime();
   void showTemperature();
-  void resetDisplay();
+  void resetDisplay() const;
+  void resetRow(int row) const;
+  void resetVariables();
+
+
   displayState getState();
 
 public:

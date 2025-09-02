@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "author": "MUHAMMAD FADHIL SYAHPUTRA",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": -28.8, "left": 110.44, "attrs": {} },
+    {
+      "type": "wokwi-lcd1602",
+      "id": "lcd1",
+      "top": -291.2,
+      "left": 130.4,
+      "attrs": { "pins": "i2c" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "lcd1:GND", "esp:GND.1", "black", [ "h-86.4", "v134.4", "h48", "v249.6" ] ],
+    [ "lcd1:VCC", "esp:5V", "red", [ "h-67.2", "v268.9" ] ],
+    [ "lcd1:SDA", "esp:21", "green", [ "h-19.2", "v144.2", "h153.6", "v144" ] ],
+    [ "lcd1:SCL", "esp:22", "green", [ "h-28.8", "v163.5", "h144", "v86.4" ] ]
+  ],
+  "dependencies": {}
+}

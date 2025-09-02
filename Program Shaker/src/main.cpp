@@ -5,7 +5,7 @@
 #include <stepper/stepper.h>
 #include <rotary/rotary.h>
 #include <LiquidCrystal_I2C.h>
-#include <Wire.h>
+
 
 namespace DIR = Hardware::Stepper::Dir;
 namespace STEP = Hardware::Stepper::Step;

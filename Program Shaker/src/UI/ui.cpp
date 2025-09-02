@@ -204,7 +204,9 @@ void ShakerUI::run()
     if (buttonState == RotaryButtonState::PRESSED)
     {
       this->handleMultipleButtonPress(3, internalUiState::NOT_CONFIGURED);
-      this->reset();
+      if (this->nthButtonPress == 3) {
+        this->reset();
+      }
     }
     return;
   }

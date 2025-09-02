@@ -39,7 +39,7 @@ private:
   void next();
   void reset();
 
-  void setMinMaxParam(float &param, float min, float max);
+  static void setMinMaxParam(float &param, float min, float max);
   void configureParam(float &param, RotaryState rotaryState, int increment = 10);
   void handleConfigureRPM(RotaryState rotaryState, RotaryButtonState buttonState);
   void handleConfigureTime(RotaryState rotaryState, RotaryButtonState buttonState);

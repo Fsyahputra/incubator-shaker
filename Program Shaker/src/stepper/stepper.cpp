@@ -76,6 +76,7 @@ void ShakerStepper::handleAcceleration()
 
   float stepInterval = 1.0f / this->convertRpmToStepPerMicros(this->speed); // µs per step target
   float a = this->convertRpmToStepPerMicros2(this->acceleration);
+
   if ((float)(currentTime - this->lastStepTime) >= this->currentInterval)
   {
     this->lastStepTime = currentTime;
@@ -112,19 +113,18 @@ void ShakerStepper::handleRunningAtSpeed()
 
 float ShakerStepper::convertStepPerMicrosToRpm(float stepPerMicros)
 {
-  return (stepPerMicros * 60.0f * 1000000.0f) / STEP_PER_REV;
+  return (  60.0f * 1000000.0f) / (STEP_PER_REV * stepPerMicros);
 }
 
 float ShakerStepper::getSpeed()
 {
+  if (this->getInternalState() == InternalStepperState::STOPPED) return  0.0;
   return this->convertStepPerMicrosToRpm(this->currentInterval);
 }
 
 void ShakerStepper::handleDeceleration()
 {
   unsigned long currentTime = micros();
-  float decelerationStep = this->convertRpmToStepPerMicros2(this->acceleration);
-  unsigned long maxInterval = this->baseIntervalStep * 10; // Interval besar untuk stop
 
   if ((float)(currentTime - lastStepTime) >= currentInterval)
   {
@@ -133,10 +133,11 @@ void ShakerStepper::handleDeceleration()
     this->sendHighPulse();
     delayMicroseconds(2);
     this->sendLowPulse();
-
-    this->currentInterval += decelerationStep;
+    float currentIntervalF = (float)this->currentInterval;
+    currentIntervalF += 1.0f;
+    this->currentInterval = (unsigned long)currentIntervalF;
     this->setInternalState(InternalStepperState::DECELERATING);
-    if (currentInterval >= maxInterval)
+    if (this->getSpeed() < 4.0f)
     {
       currentInterval = this->baseIntervalStep;
       setInternalState(InternalStepperState::STOPPED);
@@ -170,24 +171,20 @@ void ShakerStepper::run()
     case InternalStepperState::RUNNING_AT_SPEED:
       this->handleRunningAtSpeed();
       break;
+    default:
+        this->handleAcceleration();
     }
     break;
 
   case StepperState::STOP:
     switch (currentInternalState)
     {
-    case InternalStepperState::ACCELERATING:
-      this->handleDeceleration();
-      break;
-    case InternalStepperState::DECELERATING:
-      this->handleDeceleration();
-      break;
     case InternalStepperState::STOPPED:
       this->sendLowPulse();
       break;
-    case InternalStepperState::RUNNING_AT_SPEED:
-      this->handleDeceleration();
-      break;
+    default:
+        this->handleDeceleration();
+        break;
     }
     break;
   }

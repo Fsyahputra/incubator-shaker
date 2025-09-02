@@ -18,12 +18,12 @@ void RotaryEncoder::initializePins()
 
 void RotaryEncoder::setState(RotaryState newState)
 {
-  state = newState;
+  this->state = newState;
 }
 
 void RotaryEncoder::setButtonState(RotaryButtonState newButtonState)
 {
-  buttonState = newButtonState;
+  this->buttonState = newButtonState;
 }
 
 bool RotaryEncoder::getCurrentState(int pin)
@@ -34,12 +34,12 @@ bool RotaryEncoder::getCurrentState(int pin)
 
 RotaryState RotaryEncoder::getState()
 {
-  return state;
+  return this->state;
 }
 
 RotaryButtonState RotaryEncoder::getButtonState()
 {
-  return buttonState;
+  return this->buttonState;
 }
 
 void RotaryEncoder::readRotation()
@@ -51,8 +51,10 @@ void RotaryEncoder::readRotation()
   if (this->ACurrentState == this->ALastState && this->BCurrentState == this->BLastState)
   {
     setState(RotaryState::IDLE);
-    return; // No change
+    return;
   }
+
+
 
   if (this->ACurrentState != this->ALastState && (currentTime - this->rotationLastDebounceTime) > this->rotationDebounceDelay)
   {

@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "author": "MUHAMMAD FADHIL SYAHPUTRA",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": -9.6, "left": 33.64, "attrs": {} },
+    { "type": "wokwi-ky-040", "id": "encoder1", "top": 116.9, "left": -173.6, "attrs": {} }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "encoder1:CLK", "esp:19", "green", [ "h0" ] ],
+    [ "encoder1:DT", "esp:25", "green", [ "h0" ] ],
+    [ "encoder1:SW", "esp:26", "green", [ "h0" ] ],
+    [ "encoder1:VCC", "esp:5V", "red", [ "h0" ] ],
+    [ "encoder1:GND", "esp:GND.1", "black", [ "h0" ] ]
+  ],
+  "dependencies": {}
+}

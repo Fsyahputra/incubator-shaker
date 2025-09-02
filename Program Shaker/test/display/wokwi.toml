@@ -1,0 +1,4 @@
+[wokwi]
+version = 1
+firmware = '../../.pio/build/test_display/firmware.bin'
+elf = '../../.pio/build/test_display/firmware.elf'
