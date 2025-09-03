@@ -33,10 +33,8 @@ void ShakerController::run()
   }
 
   float rpm = ui.getRpm();
-  float time = ui.getTime();
-  float temperature = ui.getTemperature();
 
-  if (rpm < 0 || time < 0 || temperature < 0)
+  if (rpm < 0 )
   {
     stepper.setState(StepperState::STOP);
     return;

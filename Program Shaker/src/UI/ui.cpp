@@ -1,3 +1,4 @@
+#include <HardwareSerial.h>
 #include <UI/ui.h>
 #include <countdown/countdown.h>
 
@@ -20,6 +21,15 @@ void ShakerUI::init()
   this->lcdDisplay.setConfigTitle("Configuring");
   this->lcdDisplay.setConfigValue("...", 0.0);
 }
+
+void ShakerUI::setCurrentRpm(float rpm)
+{
+  this->currentRpm = rpm;
+}
+
+void ShakerUI::setCurrentTemperature(float temperature) {
+  this->currentTemperature = temperature;
+};
 
 ShakerUI::ShakerUI(RotaryEncoder &rotaryEncoder, ShakerDisplay &lcdDisplay, ShakerCountdown &counter)
     : rotaryEncoder(rotaryEncoder), lcdDisplay(lcdDisplay), counter(counter)
@@ -57,7 +67,6 @@ void ShakerUI::next()
     case internalUiState::CONFIGURE_TEMPERATURE:
       this->setInternalState(internalUiState::CONFIGURED);
       break;
-
     case internalUiState::CONFIGURED:
       this->setInternalState(internalUiState::NOT_CONFIGURED);
       break;
@@ -95,10 +104,12 @@ void ShakerUI::configureParam(float &param, RotaryState rotaryState, int increme
 {
   if (rotaryState == RotaryState::RIGHT)
   {
+    // Serial.println("RIGHT");
     param += increment;
   }
   else if (rotaryState == RotaryState::LEFT)
   {
+    // Serial.println("LEFT");
     param -= increment;
   }
 }
@@ -107,7 +118,7 @@ void ShakerUI::handleConfigureRPM(RotaryState rotaryState, RotaryButtonState but
 {
   this->setMinMaxParam(this->rpm, 0, 300);
   this->configureParam(this->rpm, rotaryState, 10);
-  this->lcdDisplay.setConfigTitle("Configuring RPM");
+  this->lcdDisplay.setConfigTitle("RPM SET");
   this->lcdDisplay.setConfigValue("RPM", this->rpm);
   if (buttonState == RotaryButtonState::PRESSED)
   {
@@ -119,7 +130,7 @@ void ShakerUI::handleConfigureRPM(RotaryState rotaryState, RotaryButtonState but
 void ShakerUI::handleConfigureHours(RotaryState rotaryState, RotaryButtonState buttonState) {
   ShakerUI::setMinMaxParam(this->hours, 0, 24);
   this->configureParam(this->hours, rotaryState, 1);
-  this->lcdDisplay.setConfigTitle("Configuring Hours");
+  this->lcdDisplay.setConfigTitle("HOURS SET");
   this->lcdDisplay.setConfigValue("Hours", this->hours);
   if (buttonState == RotaryButtonState::PRESSED) {
     this->lcdDisplay.setState(displayState::CONFIGURING);
@@ -130,7 +141,7 @@ void ShakerUI::handleConfigureHours(RotaryState rotaryState, RotaryButtonState b
 void ShakerUI::handleConfigureMinutes(RotaryState rotaryState, RotaryButtonState buttonState) {
   ShakerUI::setMinMaxParam(this->minutes, 0, 59);
   this->configureParam(this->minutes, rotaryState, 1);
-  this->lcdDisplay.setConfigTitle("Configuring Minutes");
+  this->lcdDisplay.setConfigTitle("MINUTES SET");
   this->lcdDisplay.setConfigValue("Minutes", this->minutes);
   if (buttonState == RotaryButtonState::PRESSED) {
     this->lcdDisplay.setState(displayState::CONFIGURING);
@@ -141,7 +152,7 @@ void ShakerUI::handleConfigureMinutes(RotaryState rotaryState, RotaryButtonState
 void ShakerUI::handleConfigureSeconds(RotaryState rotaryState, RotaryButtonState buttonState) {
   ShakerUI::setMinMaxParam(this->seconds, 0, 59);
   this->configureParam(this->seconds, rotaryState, 1);
-  this->lcdDisplay.setConfigTitle("Configuring Seconds");
+  this->lcdDisplay.setConfigTitle("SECONDS SET");
   this->lcdDisplay.setConfigValue("Seconds", this->seconds);
   if (buttonState == RotaryButtonState::PRESSED) {
     this->lcdDisplay.setState(displayState::CONFIGURING);
@@ -157,11 +168,10 @@ void ShakerUI::handleConfigureTime(RotaryButtonState buttonState)
   this->counter.setTime(this->hours, this->minutes, this->seconds);
   char timeStamp[9];
   this->counter.getTimeString(timeStamp, sizeof(timeStamp));
-  this->lcdDisplay.setConfigTitle("Configuring Time");
+  this->lcdDisplay.setConfigTitle("TIME SET");
   this->lcdDisplay.setConfigValue(timeStamp, 0.0);
   if (buttonState == RotaryButtonState::PRESSED)
   {
-    this->counter.setState(CountDownState::COUNTING);
     this->lcdDisplay.setState(displayState::CONFIGURING);
     this->next();
   }
@@ -171,10 +181,11 @@ void ShakerUI::handleConfigureTemperature(RotaryState rotaryState, RotaryButtonS
 {
   this->setMinMaxParam(this->temperature, 0, 60);
   this->configureParam(this->temperature, rotaryState, 1);
-  this->lcdDisplay.setConfigTitle("Configuring Temperature");
+  this->lcdDisplay.setConfigTitle("TEMP SET");
   this->lcdDisplay.setConfigValue("Temperature", this->temperature);
   if (buttonState == RotaryButtonState::PRESSED)
   {
+    this->lcdDisplay.resetDisplay();
     this->lcdDisplay.setState(displayState::READY);
     this->next();
   }
@@ -193,15 +204,21 @@ void ShakerUI::reset()
   this->setInternalState(internalUiState::NOT_CONFIGURED);
 }
 
-void ShakerUI::handleMultipleButtonPress(int pressCount, internalUiState nextState)
+void ShakerUI::handleMultipleButtonPress(int pressCount, internalUiState nextState, RotaryButtonState buttonState)
 {
   if (this->nthButtonPress >= pressCount)
   {
     this->setInternalState(nextState);
     this->nthButtonPress = 0;
   }
+  if (this->lastButtonState == buttonState) {
+    return;
+  }
+  if (buttonState == RotaryButtonState::PRESSED) {
+    this->setButtonPress();
+  }
+  this->lastButtonState = buttonState;
 
-  this->setButtonPress();
 }
 
 float ShakerUI::getRpm()
@@ -214,25 +231,38 @@ float ShakerUI::getRpm()
   return this->rpm;
 }
 
-float ShakerUI::getTime()
-{
-  UIState currentState = this->getState();
-  if (currentState != UIState::READY)
-  {
-    return -1.0f;
-  }
-  return 0.0;
+
+void ShakerUI::handleConfigured() const {
+  char remainingTime[9];
+  this->counter.getTimeString(remainingTime, sizeof(remainingTime));
+  this->lcdDisplay.setTime(remainingTime);
+  this->lcdDisplay.setRpm(this->currentRpm);
+  this->lcdDisplay.setTemperature(this->currentTemperature);
+  this->lcdDisplay.setState(displayState::READY);
+  this->counter.setState(CountDownState::COUNTING);
 }
 
-float ShakerUI::getTemperature()
-{
-  UIState currentState = this->getState();
-  if (currentState != UIState::READY)
-  {
-    return -1.0f;
-  }
-  return this->temperature;
+void ShakerUI::handleNotConfigured(RotaryButtonState buttonState)  {
+
+  this->setState(UIState::CONFIGURING);
+  this->lcdDisplay.setState(displayState::CONFIGURING);
+  this->lcdDisplay.setConfigTitle("NOT CONFIGURED");
+  this->lcdDisplay.setConfigValue("...", this->nthButtonPress + 1.0);
+  this->handleMultipleButtonPress(3, internalUiState::CONFIGURE_RPM, buttonState);
 }
+
+void ShakerUI::handleConfigured(RotaryButtonState buttonState) {
+  if (this->counter.getState() == CountDownState::DONE) {
+    return;
+  }
+  this->setState(UIState::READY);
+  this->handleConfigured();
+  this->handleMultipleButtonPress(3, internalUiState::NOT_CONFIGURED, buttonState);
+  if (this->nthButtonPress == 3) {
+    this->reset();
+  }
+}
+
 
 void ShakerUI::run()
 {
@@ -244,56 +274,42 @@ void ShakerUI::run()
   internalUiState internalState = this->getInternalState();
   CountDownState countdownState = this->counter.getState();
 
-  if (internalState == internalUiState::NOT_CONFIGURED)
-  {
-    this->setState(UIState::CONFIGURING);
-    this->lcdDisplay.setState(displayState::CONFIGURING);
-    this->lcdDisplay.setConfigTitle("NOT CONFIGURED");
-    this->lcdDisplay.setConfigValue("...", 0.0);
-    if (buttonState == RotaryButtonState::PRESSED)
-    {
-      this->handleMultipleButtonPress(3, internalUiState::CONFIGURE_RPM);
-    }
-    return;
-  }
-
-  if (internalState == internalUiState::CONFIGURED)
-  {
-    this->setState(UIState::READY);
-    if (buttonState == RotaryButtonState::PRESSED)
-    {
-      this->handleMultipleButtonPress(3, internalUiState::NOT_CONFIGURED);
-      if (this->nthButtonPress == 3) {
-        this->reset();
-      }
-    }
-    return;
-  }
-
   switch (internalState)
   {
-  case internalUiState::CONFIGURE_RPM:
-    this->handleConfigureRPM(rotaryState, buttonState);
-    break;
-  case internalUiState::CONFIGURE_HOURS:
-    this->handleConfigureHours(rotaryState, buttonState);
-    break;
-  case internalUiState::CONFIGURE_MINUTES:
-    this->handleConfigureMinutes(rotaryState, buttonState);
-    break;
-  case internalUiState::CONFIGURE_SECONDS:
-    this->handleConfigureSeconds(rotaryState, buttonState);
-    break;
-  case internalUiState::CONFIGURE_TIME:
-    this->handleConfigureTime(buttonState);
-    break;
-  case internalUiState::CONFIGURE_TEMPERATURE:
-    this->handleConfigureTemperature(rotaryState, buttonState);
-    break;
+    case internalUiState::NOT_CONFIGURED:
+      this->handleNotConfigured(buttonState);
+      break;
+    case internalUiState::CONFIGURE_RPM:
+      this->handleConfigureRPM(rotaryState, buttonState);
+      break;
+    case internalUiState::CONFIGURE_HOURS:
+      this->handleConfigureHours(rotaryState, buttonState);
+      break;
+    case internalUiState::CONFIGURE_MINUTES:
+      this->handleConfigureMinutes(rotaryState, buttonState);
+      break;
+    case internalUiState::CONFIGURE_SECONDS:
+      this->handleConfigureSeconds(rotaryState, buttonState);
+      break;
+    case internalUiState::CONFIGURE_TIME:
+      this->handleConfigureTime(buttonState);
+      break;
+    case internalUiState::CONFIGURE_TEMPERATURE:
+      this->handleConfigureTemperature(rotaryState, buttonState);
+      break;
+    case internalUiState::CONFIGURED:
+      this->handleConfigured(buttonState);
+    default:
+      break;
   }
+
 
   if (countdownState == CountDownState::DONE) {
     this->setInternalState(internalUiState::NOT_CONFIGURED);
+    this->lcdDisplay.setState(displayState::CONFIGURING);
+    this->counter.resetVariables();
+    this->lcdDisplay.resetDisplay();
+    this->counter.setState(CountDownState::STOPPED);
     this->reset();
   }
 }

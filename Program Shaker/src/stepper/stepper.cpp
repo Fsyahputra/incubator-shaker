@@ -25,18 +25,20 @@ ShakerStepper::ShakerStepper(int stepPins[], int dirPins[])
 
 void ShakerStepper::sendHighPulse()
 {
-  for (int i = 0; i < sizeof(stepPins) / sizeof(stepPins[0]); i++)
-  {
-    digitalWrite(stepPins[i], HIGH);
-  }
+  // for (int i = 0; i < sizeof(stepPins) / sizeof(stepPins[0]); i++)
+  // {
+  //   digitalWrite(stepPins[i], HIGH);
+  // }
+  GPIO.out_w1ts= ((1ULL<<stepPins[0]) | (1ULL<<stepPins[1]) | (1ULL<<stepPins[2]) | (1ULL<<stepPins[3]));
 }
 
 void ShakerStepper::sendLowPulse()
 {
-  for (int i = 0; i < sizeof(stepPins) / sizeof(stepPins[0]); i++)
-  {
-    digitalWrite(stepPins[i], LOW);
-  }
+  // for (int i = 0; i < sizeof(stepPins) / sizeof(stepPins[0]); i++)
+  // {
+  //   digitalWrite(stepPins[i], LOW);
+  // }
+  GPIO.out_w1tc = ((1ULL<<stepPins[0]) | (1ULL<<stepPins[1]) | (1ULL<<stepPins[2]) | (1ULL<<stepPins[3]));
 }
 
 float ShakerStepper::convertRpmToStepPerMicros(float rpm)

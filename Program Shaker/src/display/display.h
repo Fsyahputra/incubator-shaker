@@ -35,11 +35,11 @@ private:
   int sclPin;
 
   float rpm = 0.0;
-  float time = 0.0;
+  char time[20] = "00:00:00";
   float temperature = 0.0;
 
   float lastRpm = 0.0;
-  float lastTime = 0.0;
+  char lastTime[20] = "00:00:00";
   float lastTemperature = 0.0;
 
 
@@ -49,7 +49,6 @@ private:
   void showRpm();
   void showTime();
   void showTemperature();
-  void resetDisplay() const;
   void resetRow(int row) const;
   void resetVariables();
 
@@ -59,9 +58,11 @@ private:
 public:
   ShakerDisplay(LiquidCrystal_I2C &lcd, int sdaPin, int sclPin);
   void setConfigTitle(const char *title);
+  void resetDisplay() const;
+
   void setConfigValue(const char *label, float value);
   void setRpm(float rpm);
-  void setTime(float time);
+  void setTime(char *time);
   void setTemperature(float temperature);
   void run();
   void initDisplay();

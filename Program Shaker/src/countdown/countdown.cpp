@@ -72,7 +72,7 @@ void ShakerCountdown::resetVariables() {
 void ShakerCountdown::countDown() {
     this->setState(CountDownState::COUNTING);
     const unsigned long now = millis();
-    if (now - this->lastTime >= 10) {
+    if (now - this->lastTime >= 1000) {
         this->lastTime = now;
         this->_totalSeconds -= 1;
         if (this->_totalSeconds <= 0) {

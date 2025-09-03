@@ -31,7 +31,7 @@ private:
   bool lastButtonState = false;
 
   unsigned long rotationLastDebounceTime = 0;
-  const unsigned long rotationDebounceDelay = 50;
+  const unsigned long rotationDebounceDelay = 100;
 
   unsigned long buttonLastDebounceTime = 0;
   const unsigned long buttonDebounceDelay = 50;

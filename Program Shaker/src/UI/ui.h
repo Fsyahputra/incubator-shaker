@@ -32,16 +32,21 @@ private:
   float seconds = 0;
   float temperature = 0;
 
+
+  float currentRpm = 0;
+  float currentTemperature = 0;
+
   RotaryEncoder &rotaryEncoder;
   ShakerDisplay &lcdDisplay;
   ShakerCountdown &counter;
+  RotaryButtonState lastButtonState = RotaryButtonState::RELEASED;
   void setState(UIState state);
   int nthButtonPress = 0;
   UIState state = UIState::CONFIGURING;
   internalUiState internalState = internalUiState::NOT_CONFIGURED;
   void setButtonPress();
   void setInternalState(internalUiState state);
-  void handleMultipleButtonPress(int pressCount, internalUiState nextState);
+  void handleMultipleButtonPress(int pressCount, internalUiState nextState, RotaryButtonState buttonState);
   internalUiState getInternalState();
   void next();
   void reset();
@@ -49,6 +54,9 @@ private:
   static void setMinMaxParam(float &param, float min, float max);
 
   void configureParam(float &param, RotaryState rotaryState, int increment = 10);
+  void handleConfigured() const;
+  void handleNotConfigured(RotaryButtonState buttonState);
+  void handleConfigured(RotaryButtonState buttonState) ;
   void handleConfigureRPM(RotaryState rotaryState, RotaryButtonState buttonState);
   void handleConfigureHours(RotaryState rotaryState, RotaryButtonState buttonState);
   void handleConfigureMinutes(RotaryState rotaryState, RotaryButtonState buttonState);
@@ -59,10 +67,10 @@ private:
 public:
   ShakerUI(RotaryEncoder &rotaryEncoder, ShakerDisplay &lcdDisplay, ShakerCountdown &counter);
   void run();
+  void setCurrentRpm(float rpm);
+  void setCurrentTemperature(float temperature);
   void init();
   float getRpm();
-  float getTime();
-  float getTemperature();
   UIState getState();
 };
 

@@ -20,8 +20,6 @@ displayState ShakerDisplay::getState()
 
 void ShakerDisplay::setState(displayState newState)
 {
-  this->resetDisplay();
-  this->resetVariables();
   this->state = newState;
 }
 
@@ -78,7 +76,7 @@ void ShakerDisplay::showRpm() {
   if (this->lastRpm == this->rpm) {
     return;
   }
-  this->resetToNCloumns(0, 8, 0);
+  // this->resetToNCloumns(0, 8, 0);
   this->lcd.setCursor(0, 0);
   this->lcd.print("RPM:");
   this->lcd.print(this->rpm, 2);
@@ -86,21 +84,21 @@ void ShakerDisplay::showRpm() {
 }
 
 void ShakerDisplay::showTime() {
-  if (this->lastTime == this->time) {
+  if (strcmp(this->lastTime, this->time) == 0) {
     return;
   }
   this->resetRow(1);
   this->lcd.setCursor(0, 1);
   this->lcd.print("Time:");
-  this->lcd.print(this->time, 2);
-  this->lastTime = this->time;
+  this->lcd.print(this->time);
+  strcpy(this->lastTime, this->time);
 }
 
 void ShakerDisplay::showTemperature() {
   if (this->lastTemperature == this->temperature) {
     return;
   }
-  this->resetToNCloumns(8, 16, 0);
+  // this->resetToNCloumns(8, 16, 0);
   this->lcd.setCursor(8, 0);
   this->lcd.print("Temp:");
   this->lcd.print(this->temperature, 2);
@@ -112,9 +110,9 @@ void ShakerDisplay::setTemperature(float temperature)
   this->temperature = temperature;
 }
 
-void ShakerDisplay::setTime(float time)
+void ShakerDisplay::setTime(char *time)
 {
-  this->time = time;
+  strcpy(this->time, time);
 }
 
 void ShakerDisplay::resetDisplay() const {
@@ -151,10 +149,10 @@ void ShakerDisplay::resetVariables() {
   this->configValueLabel[0] = '\0';
   this->lastConfigValueLabel[0] = '\0';
   this->rpm = 0.0;
-  this->time = 0.0;
+  strcpy(this->time, "00:00:00");
   this->temperature = 0.0;
   this->lastRpm = 0.0;
-  this->lastTime = 0.0;
+  strcpy(this->lastTime, "00:00:00");
   this->lastTemperature = 0.0;
   this->configValue = 0.0;
   this->lastConfigValue = 0.0;

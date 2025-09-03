@@ -11,7 +11,7 @@ bool firstTime = true;
 ShakerCountdown cd;
 
 void secondTestSetup() {
-    cd.setTime(0, 0, 10);
+    cd.setTime(0, 0, 1000);
     cd.setState(CountDownState::COUNTING);
 }
 
@@ -48,7 +48,7 @@ void hourTestLoop() {
     const unsigned long now = millis();
     char timeString[32];
     cd.getTimeString(timeString, sizeof(timeString));
-    if (now - lastTime > 10 || firstTime) {
+    if (now - lastTime > 1000 || firstTime) {
         Serial.println(timeString);
         lastTime = now;
         firstTime = false;

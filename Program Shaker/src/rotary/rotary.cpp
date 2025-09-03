@@ -37,7 +37,7 @@ RotaryState RotaryEncoder::getState()
   return this->state;
 }
 
-RotaryButtonState RotaryEncoder::getButtonState()
+RotaryButtonState RotaryEncoder:: getButtonState()
 {
   return this->buttonState;
 }
@@ -45,25 +45,29 @@ RotaryButtonState RotaryEncoder::getButtonState()
 void RotaryEncoder::readRotation()
 {
   unsigned long currentTime = millis();
-  this->ACurrentState = this->getCurrentState(this->pinA);
-  this->BCurrentState = this->getCurrentState(this->pinB);
 
-  if (this->ACurrentState == this->ALastState && this->BCurrentState == this->BLastState)
+
+
+  this->ACurrentState = this->getCurrentState(this->pinA);
+  if (this->ACurrentState == this->ALastState )
   {
     setState(RotaryState::IDLE);
     return;
   }
 
-
-
   if (this->ACurrentState != this->ALastState && (currentTime - this->rotationLastDebounceTime) > this->rotationDebounceDelay)
   {
+
+    this->BCurrentState = this->getCurrentState(this->pinB);
+
     if (this->BCurrentState != this->ACurrentState)
     {
+      Serial.println("RIGHT");
       setState(RotaryState::RIGHT);
     }
     else
     {
+      Serial.println("LEFT");
       setState(RotaryState::LEFT);
     }
 
@@ -71,7 +75,6 @@ void RotaryEncoder::readRotation()
   }
 
   this->ALastState = this->ACurrentState;
-  this->BLastState = this->BCurrentState;
 }
 
 void RotaryEncoder::readButton()
@@ -84,12 +87,16 @@ void RotaryEncoder::readButton()
 
     if (this->currentButtonState == LOW)
     {
+      Serial.println("PRESSED");
       setButtonState(RotaryButtonState::PRESSED);
     }
     else
     {
+      Serial.println("RELEASED");
       setButtonState(RotaryButtonState::RELEASED);
     }
+  } else {
+    setButtonState(RotaryButtonState::RELEASED);
   }
   this->lastButtonState = this->currentButtonState;
 }

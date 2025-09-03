@@ -13,8 +13,8 @@ ShakerStepper stp(stepPin, dirPin);
 void setup() {
     Serial.begin(115200);
     stp.init();
-    stp.setSpeed(200);
-    stp.setAcceleration(1.0);
+    stp.setSpeed(500);
+    stp.setAcceleration(10.0);
     stp.setState(StepperState::RUN);
 }
 
@@ -26,12 +26,12 @@ void loop() {
         Serial.println(speed);
         lastTime = now;
     }
-    if (speed > 201) {
-        stp.setState(StepperState::STOP);
-    }
+    // if (speed > 500) {
+    //     stp.setState(StepperState::STOP);
+    // }
 
-    if (speed == 0) {
-        stp.setState(StepperState::RUN);
-    }
+    // if (speed == 0) {
+    //     stp.setState(StepperState::RUN);
+    // }
 
 }
