@@ -29,11 +29,11 @@ private:
   unsigned long currentInterval = this->baseIntervalStep;
   float speed = 0;
   float acceleration = 0;
-  int stepPins[4];
-  int dirPins[4];
+  int stepPins[4]{};
+  int dirPins[4]{};
   unsigned long lastStepTime = 0;
   void setInternalState(InternalStepperState newState);
-  float convertRpmToStepPerMicros(float rpm);
+  float convertRpmToStepPerMicros(float rpm) const;
   float convertStepPerMicrosToRpm(float stepPerMicros);
   void handleAcceleration();
   void handleDeceleration();
@@ -44,7 +44,7 @@ private:
   void sendLowPulse();
 
 public:
-  ShakerStepper(int stepPins[], int dirPins[]);
+  ShakerStepper(const int stepPins[], const int dirPins[]);
   void init();
   void setSpeed(float rpm);
   void setAcceleration(float rpm);

@@ -3,18 +3,20 @@
 
 void ShakerStepper::init()
 {
-  for (int i = 0; i < sizeof(stepPins) / sizeof(stepPins[0]); i++)
+  for (unsigned int i = 0; i < std::size(stepPins); i++)
   {
     pinMode(stepPins[i], OUTPUT);
     pinMode(dirPins[i], OUTPUT);
     digitalWrite(dirPins[i], LOW);
     digitalWrite(stepPins[i], LOW);
   }
+    pinMode(D6, OUTPUT);
+    digitalWrite(D6, LOW);
   this->state = StepperState::STOP;
   this->internalState = InternalStepperState::STOPPED;
 }
 
-ShakerStepper::ShakerStepper(int stepPins[], int dirPins[])
+ShakerStepper::ShakerStepper(const int stepPins[], const int dirPins[])
 {
   for (int i = 0; i < 4; i++)
   {
@@ -29,7 +31,8 @@ void ShakerStepper::sendHighPulse()
   // {
   //   digitalWrite(stepPins[i], HIGH);
   // }
-  GPIO.out_w1ts= ((1ULL<<stepPins[0]) | (1ULL<<stepPins[1]) | (1ULL<<stepPins[2]) | (1ULL<<stepPins[3]));
+  GPOS = ((1ULL<<stepPins[0]) | (1ULL<<stepPins[1]) | (1ULL<<stepPins[2]) | (1ULL<<stepPins[3]));  // ESP8266 spesific
+  // GPIO.out_w1ts= ((1ULL<<stepPins[0]) | (1ULL<<stepPins[1]) | (1ULL<<stepPins[2]) | (1ULL<<stepPins[3])); ESP32 specific
 }
 
 void ShakerStepper::sendLowPulse()
@@ -38,10 +41,11 @@ void ShakerStepper::sendLowPulse()
   // {
   //   digitalWrite(stepPins[i], LOW);
   // }
-  GPIO.out_w1tc = ((1ULL<<stepPins[0]) | (1ULL<<stepPins[1]) | (1ULL<<stepPins[2]) | (1ULL<<stepPins[3]));
+  GPOC = ((1ULL<<stepPins[0]) | (1ULL<<stepPins[1]) | (1ULL<<stepPins[2]) | (1ULL<<stepPins[3]));  // ESP8266 specific
+  // GPIO.out_w1tc = ((1ULL<<stepPins[0]) | (1ULL<<stepPins[1]) | (1ULL<<stepPins[2]) | (1ULL<<stepPins[3])); ESP32 specific
 }
 
-float ShakerStepper::convertRpmToStepPerMicros(float rpm)
+float ShakerStepper::convertRpmToStepPerMicros(const float rpm) const
 {
   return (rpm * STEP_PER_REV) / (60.0f * 1000000.0f);
 }
@@ -139,7 +143,7 @@ void ShakerStepper::handleDeceleration()
     currentIntervalF += 1.0f;
     this->currentInterval = (unsigned long)currentIntervalF;
     this->setInternalState(InternalStepperState::DECELERATING);
-    if (this->getSpeed() < 4.0f)
+    if (this->getSpeed() < 100.0f)
     {
       currentInterval = this->baseIntervalStep;
       setInternalState(InternalStepperState::STOPPED);

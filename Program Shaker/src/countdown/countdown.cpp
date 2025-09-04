@@ -2,7 +2,8 @@
 // Created by fadhil on 9/2/25.
 //
 
-#include <esp32-hal.h>
+// #include <esp32-hal.h>
+#include <Arduino.h>
 #include <countdown/countdown.h>
 #include "UI/ui.h"
 
