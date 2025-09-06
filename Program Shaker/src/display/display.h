@@ -31,8 +31,8 @@ private:
   float configValue = 0.0;
   float lastConfigValue = 0.0;
 
-  int sdaPin;
-  int sclPin;
+  int sdaPin; // TODO: move to higher class
+  int sclPin; // TODO: move to higher class
 
   float rpm = 0.0;
   char time[20] = "00:00:00";

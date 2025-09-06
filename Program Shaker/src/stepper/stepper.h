@@ -25,7 +25,7 @@ private:
   StepperState state = StepperState::STOP;
   InternalStepperState internalState = InternalStepperState::STOPPED;
   long STEP_PER_REV = Hardware::Stepper::STEP_PER_REV;
-  const unsigned long baseIntervalStep = 5000;
+  const unsigned long baseIntervalStep = 50000;
   unsigned long currentInterval = this->baseIntervalStep;
   float speed = 0;
   float acceleration = 0;

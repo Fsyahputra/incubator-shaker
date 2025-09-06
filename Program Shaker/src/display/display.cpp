@@ -7,7 +7,7 @@
 void ShakerDisplay::initDisplay()
 {
 
-  Wire.begin(sdaPin, sclPin);
+  Wire.begin(sdaPin, sclPin); //TODO: move to higher class
   this->lcd.begin(Hardware::LcdI2C::LCD_COLS, Hardware::LcdI2C::LCD_ROWS);
   this->lcd.backlight();
   this->resetDisplay();

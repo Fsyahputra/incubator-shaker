@@ -14,8 +14,8 @@ ShakerStepper stp(stepPin, dirPin);
 void setup() {
     Serial.begin(115200);
     stp.init();
-    stp.setSpeed(300.0);
-    stp.setAcceleration(200.0);
+    stp.setSpeed(200.0);
+    stp.setAcceleration(20.0);
     stp.setState(StepperState::RUN);
     pinMode(D6, OUTPUT);
     digitalWrite(D6, LOW);
@@ -27,6 +27,7 @@ void loop() {
     stp.run();
     if (now -lastTime > 100) {
         speed = stp.getSpeed();
+        Serial.println(speed);
         lastTime = now;
     }
 

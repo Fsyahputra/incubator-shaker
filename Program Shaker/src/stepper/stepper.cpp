@@ -27,21 +27,21 @@ ShakerStepper::ShakerStepper(const int stepPins[], const int dirPins[])
 
 void ShakerStepper::sendHighPulse()
 {
-  // for (int i = 0; i < sizeof(stepPins) / sizeof(stepPins[0]); i++)
-  // {
-  //   digitalWrite(stepPins[i], HIGH);
-  // }
-  GPOS = ((1ULL<<stepPins[0]) | (1ULL<<stepPins[1]) | (1ULL<<stepPins[2]) | (1ULL<<stepPins[3]));  // ESP8266 spesific
+  for (int i = 0; i < sizeof(stepPins) / sizeof(stepPins[0]); i++)
+  {
+    digitalWrite(stepPins[i], HIGH);
+  }
+  // GPOS = ((1ULL<<stepPins[0]) | (1ULL<<stepPins[1]) | (1ULL<<stepPins[2]) | (1ULL<<stepPins[3]));  // ESP8266 spesific
   // GPIO.out_w1ts= ((1ULL<<stepPins[0]) | (1ULL<<stepPins[1]) | (1ULL<<stepPins[2]) | (1ULL<<stepPins[3])); ESP32 specific
 }
 
 void ShakerStepper::sendLowPulse()
 {
-  // for (int i = 0; i < sizeof(stepPins) / sizeof(stepPins[0]); i++)
-  // {
-  //   digitalWrite(stepPins[i], LOW);
-  // }
-  GPOC = ((1ULL<<stepPins[0]) | (1ULL<<stepPins[1]) | (1ULL<<stepPins[2]) | (1ULL<<stepPins[3]));  // ESP8266 specific
+  for (int i = 0; i < sizeof(stepPins) / sizeof(stepPins[0]); i++)
+  {
+    digitalWrite(stepPins[i], LOW);
+  }
+  // GPOC = ((1ULL<<stepPins[0]) | (1ULL<<stepPins[1]) | (1ULL<<stepPins[2]) | (1ULL<<stepPins[3]));  // ESP8266 specific
   // GPIO.out_w1tc = ((1ULL<<stepPins[0]) | (1ULL<<stepPins[1]) | (1ULL<<stepPins[2]) | (1ULL<<stepPins[3])); ESP32 specific
 }
 
@@ -93,7 +93,7 @@ void ShakerStepper::handleAcceleration()
 
     if (this->currentInterval > stepInterval)
     {
-      this->currentInterval = this->currentInterval / (1.0f + a * this->currentInterval * this->currentInterval);
+      this->currentInterval = this->currentInterval / (1.0f + a * this->currentInterval * this->currentInterval );
       if (this->currentInterval < stepInterval)
         this->currentInterval = stepInterval;
       this->setInternalState(InternalStepperState::ACCELERATING);
@@ -143,7 +143,7 @@ void ShakerStepper::handleDeceleration()
     currentIntervalF += 1.0f;
     this->currentInterval = (unsigned long)currentIntervalF;
     this->setInternalState(InternalStepperState::DECELERATING);
-    if (this->getSpeed() < 100.0f)
+    if (this->getSpeed() < 4.0f)
     {
       currentInterval = this->baseIntervalStep;
       setInternalState(InternalStepperState::STOPPED);
